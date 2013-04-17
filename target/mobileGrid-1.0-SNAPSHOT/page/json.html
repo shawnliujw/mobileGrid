@@ -1,0 +1,85 @@
+
+<!DOCTYPE html >
+<html>
+<script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+<head>
+
+<script>
+	
+	function showJSONData(){
+		var jsonData = localStorage.getItem('jsonData');
+		jsonData = JSON.parse(jsonData);
+		var postDiv = $("#combineJSON");
+		$("#combineJSON").html("");
+		var example = $("#exampleDiv");	
+		if(jsonData.facebook != undefined){
+			
+			$(jsonData.facebook).each(function(index,item){
+				
+				var div = $("<div/>");											
+				example.find("ul:eq(0)").html("").html((index+1)+"."+item.message);				
+				example.find("img:eq(0)").attr("src",item.picture);
+				div.html(example.html());
+				postDiv.append(div);
+				
+			});
+		} 
+		if (jsonData.youtube != undefined) {
+			
+			$(jsonData.youtube).each(function(index,item){
+				
+				var div = $("<div/>");
+				example.find("ul:eq(0)").html("").html((index+1)+"."+item.title);
+				example.find("img:eq(0)").attr("src",item.thumbnail.sqDefault);
+				div.html(example.html());
+				postDiv.append(div);
+				
+			});
+		}
+	}
+	
+	$(document).ready(function(){
+		showJSONData();
+	});
+</script>
+</head>
+
+<style>
+	.message {
+		font-size:15px;
+		font-weight:bold;
+	}
+	.userName {
+		
+	}
+	.content {
+		color:gray;
+	}
+	
+	#exampleDiv li {
+		float:left;
+	}
+	
+	#do {
+		color:green;
+		font-size:20px;
+	}
+</style>
+<body>
+	<div id='exampleDiv' style="display:none;">
+	
+	<li style="float:left;list-style:none;">
+	
+		<ul class='message'></ul>
+		<ul class='image'><img></img></ul>
+	</li>	
+	
+	</div>
+	
+	
+<span style='font-size:30px;font-weight:bold;color:red;'>Combine JSON Result</span> 
+<div id="combineJSON">
+
+</div>
+</body>
+</html>

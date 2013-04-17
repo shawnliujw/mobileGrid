@@ -1,0 +1,46 @@
+@charset "utf-8";
+/* CSS Document */
+
+#wrapper {
+	position:relative;
+	width:100%px;
+	height:auto;
+}
+#header {
+	height:60px;
+	background:url(../images/schwartz_logo.png) no-repeat top left;
+}
+#content {
+	
+}
+/* grid-a-licious */
+.item { border:1px solid #eeeeee; }
+.item img { max-width:150px; max-height:150px; }
+
+
+
+
+
+/* End grid-a-licious */
+
+/* Box CSS */
+.box {
+  margin-right: 1px;
+  margin-bottom: 1px;
+  padding: 0px;
+  background: #1D1D1D;
+  line-height: 1.4em;
+  float: left;
+}
+.col1 { width: 159px; height:159px;}
+.col1t { width:159px; height:179px; }
+.col2W { width: 319px; height:159px;}
+.col2H { width: 159px; height:319px;}
+.col2WH{ width: 319px; height:319px;}
+.box img {
+  display: block;
+  width: 100%;
+}
+.col1 img { max-width: 159px; max-height:159px;}
+.col2W img { max-width: 319px; max-height:159px;}
+.col2H img { max-width: 319px; max-height:319px;}

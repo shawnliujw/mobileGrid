@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<head>
+<title>Mobile Builder</title>
+<link type="text/css" href="./css/build-styles.css" rel="stylesheet" />
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+	window.mobileGrid = (function MobileGrid(){
+		var jsonData = {};
+		var publicMembers = {
+			fetchData: function(site,url) {
+				if(site === 'youtube') {
+					try {
+						$.ajax({
+							url:url,
+							type:'get',
+							dataType:'json',
+							success:function(youtubeData){ 
+								alert("success to get youtube");
+								var itemArray = new Array();
+								$(youtubeData.data.items).each(function(index,item){
+									//you can filter data here , if it's your want, go ahead, otherwise , skip the code below.
+									itemArray.push(item);							
+								});
+								jsonData.youtube = itemArray;
+								//localStorage.setItem('jsonData',JSON.stringify(jsonData));
+								//publicMembers.displayData();
+							},
+							error:function(e){
+									alert("Error when get posts from youtube" + e.responseText);
+							}
+						});
+					} catch(e) {
+						alert("Error when get posts from youtube" + e.responseText);
+					}
+					
+				} else if(site === 'facebook') {
+					try {
+						$.ajax({
+							url:url,
+							type:'get',
+							dataType:'json',
+							success:function(facebookData){
+							alert("success to get facebook");
+								var itemArray = new Array();
+								$(facebookData.data).each(function(index,item){						
+									//you can filter data here 							
+									if(_privateMembers.filterFacebookData(item)) {
+										itemArray.push(item);
+									}							
+								});
+								jsonData.facebook= itemArray;
+								//localStorage.setItem('jsonData',JSON.stringify(jsonData));
+								//publicMembers.displayData();
+							},
+							error:function(e){					 
+								alert("Error when get posts from facebook" + e.responseText);
+							}
+						});
+					} catch (e) {
+						alert("Error when get posts from facebook:" + e.responseText);
+					}
+				}
+			},
+			clearResult:function() {
+				$("#combineJSON").html("");
+				jsonData = {};
+			},
+                        saveFile:function(url) {
+                                //JSON.stringify(jsonData)
+                                
+                                try {
+                                    jsonData = JSON.stringify(jsonData);
+                                    if(jsonData != undefined && jsonData != '') {
+                                        var fileName = new Date().getTime();
+                                        $.ajax({
+                                            url:'newFile.action',
+                                            type:'post',
+                                            dataType:'json',
+                                            async:false,
+                                            data:{'fileName':fileName,'jsonString':jsonData},
+                                            success:function(data) {
+                                                //return data;
+                                                if(data.indexOf("Success") != -1) {
+                                                    window.location.href= "output/"+fileName;
+                                                } else {
+                                                    alert(data);
+                                                }
+                                            },error:function(e) {
+                                                
+                                                alert("Error when save json result to file:" + e.responseText);
+                                                //return "Error when save json result to file:" + e.responseText;
+                                            }
+                                        });
+                                    }
+                                    
+                                } catch(e) {
+                                    alert(e);
+                                    window.console.log(e.message);
+                                }
+                        }
+		};
+		var _privateMembers = {
+			isNotEmpty:function(str){
+				if(str != undefined && str != '') {
+					return true;
+				} else {
+					return false;
+				}
+			},
+			filterFacebookData:function (item) {
+				var flag = false;			
+				if((_privateMembers.isNotEmpty(item.message) || _privateMembers.isNotEmpty(item.story)) && _privateMembers.isNotEmpty(item.picture)) {
+					flag = true;
+				}
+				return flag;
+			}
+		};
+		
+		publicMembers.clearResult();
+		return publicMembers;
+	})();
+        
+        function publish() {
+            mobileGrid.saveFile('output.html');
+        }
+</script>
+<script>
+	var accessToken = '';	
+	function fetchFacebook() {
+		var facebookId = $("#facebookId").val();		
+		if(facebookId == undefined || facebookId == '') {
+			alert("Please input facebook id.");
+		} else {
+			try {
+				var url = 'https://graph.facebook.com/'+facebookId+'/posts?access_token='+accessToken;
+			    mobileGrid.fetchData('facebook',url);
+			} catch (e) {
+				alert("Error retrieving posts from facebook:"+ e.responseText);
+			}
+		}				
+	}
+	
+	
+	
+	function fetchYoutube() {
+		var youtubeId = $("#youtubeId").val();
+		//var url = "http://gdata.youtube.com/feeds/api/users/KelloggsUS/uploads?v=2&alt=jsonc&max-results=5";
+		var url = "http://gdata.youtube.com/feeds/api/users/"+youtubeId+"/uploads?v=2&alt=jsonc&max-results=5";
+		try {
+			mobileGrid.fetchData('youtube',url);
+		} catch (e) {
+			alert("Error retrieving videos from youtube:"+ e.responseText);
+		}
+	}
+	
+	//second page call this method
+	
+	function showJSONData(){
+		var jsonData = localStorage.getItem('jsonData');
+		
+		if(jsonData != undefined && jsonData != '') {
+			window.location.href='output.html';
+		} else {
+			alert('Please fetch data first!');
+		}
+	}
+	
+</script>
+<script>
+  window.fbAsyncInit = function() {
+		// init the FB JS SDK
+		FB.init({
+		  appId      : '465090210184688', // App ID from the App Dashboard
+		  channelUrl : 'http://dev.dotter.me/json/index.html', // Channel File for x-domain communication
+		  status     : true, // check the login status upon init?
+		  cookie     : true, // set sessions cookies to allow your server to access the session?
+		  xfbml      : true  // parse XFBML tags on this page?
+		});
+		FB.getLoginStatus(function(response) {
+		  if (response.status === 'connected') {
+			// connected
+			//alert('connected');
+			accessToken = response.authResponse.accessToken;
+			$("#loginButton").hide();
+			$("#loginDiv").text('Logged in to Facebook');
+		  } else if (response.status === 'not_authorized') {
+			// not_authorized
+			$("#loginButton").show();
+			$("#loginDiv").text('Not logged in');
+		  } else {
+			// not_logged_in
+			$("#loginButton").show();
+			$("#loginDiv").text('Other Status!');
+		  }
+		 });
+	
+	}
+	function login() {
+		FB.login(function(response) {
+			if (response.authResponse) {
+			   //alert(response.authResponse.accessToken);
+			   accessToken = response.authResponse.accessToken;
+			$("#loginButton").hide();
+			$("#loginDiv").text('Logged in to Facebook');
+			} else {
+				// cancelled
+				alert('Cancelled');
+			}
+		});
+	}
+
+  // Load the SDK's source Asynchronously
+  // Note that the debug version is being actively developed and might 
+  // contain some type checks that are overly strict. 
+  // Please report such bugs using the bugs tool.
+  (function(d, debug){
+     var js, id = 'facebook-jssdk', ref = d.getElementsByTagName('script')[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement('script'); js.id = id; js.async = true;
+     js.src = "//connect.facebook.net/en_US/all" + (debug ? "/debug" : "") + ".js";
+     ref.parentNode.insertBefore(js, ref);
+   }(document, /*debug*/ false));
+</script>
+</head>
+<body>
+    <div id="header">
+        <h4>Mobile Builder</h4>
+        <ul>
+        	<li id="login-status">Demo</li>
+        </ul>
+    </div>
+    <div id="sub-header">
+    	<h2>Mobile Content Creator</h2>
+    </div>
+    <div id="content">
+    	<div id="left-nav">
+        	<div id="fb-root"></div>
+            <button onclick="login()" id="loginButton">Login with Facebook</button> 
+            <div id="loginDiv"></div>
+        	<ul>
+            	<li>...
+					<ul>
+						<li><input id="facebookId" type="text" value="Facebook page ID" onblur="if (this.value == '') {this.value = 'Facebook page ID';}" onfocus="if (this.value == 'Facebook page ID') {this.value = '';}"/><button onClick="fetchFacebook();">Get data</button></li>
+						<li><input id="twitterId" type="text" value="Twitter Handle" onblur="if (this.value == '') {this.value = 'Twitter Handle';}" onfocus="if (this.value == 'Twitter Handle') {this.value = '';}" disabled /><button onClick="">Get data</button></li>
+						<li><input id="youtubeId" type="text" value="Youtube channel ID" onblur="if (this.value == '') {this.value = 'Youtube channel ID';}" onfocus="if (this.value == 'Youtube channel ID') {this.value = '';}"/><button onClick="fetchYoutube();">Get data</button></li>
+						<li><input id="pinterestId" type="text" value="Pinterest page URL" onblur="if (this.value == '') {this.value = 'Pinterest page URL';}" onfocus="if (this.value == 'Pinterest page URL') {this.value = '';}" disabled /><button onClick="">Get data</button></li>
+						<li><input id="dotterId" type="text" value="Dotter Open Store URL" onblur="if (this.value == '') {this.value = 'Dotter Open Store URL';}" onfocus="if (this.value == 'Dotter Open Store URL') {this.value = '';}" disabled /><button onClick="">Get data</button></li>
+					</ul>
+				</li>
+            </ul>
+        <div id="do"></div>
+        <button onclick="mobileGrid.clearResult();">Clear Result</button>
+		<button onclick="publish();">Publish</button>
+        </div>
+            <div id="right-panel">
+                <div id='exampleDiv' style="display:none;">
+                <li style="float:left;list-style:none;">
+                    <ul class='message'></ul>
+                    <ul class='image'><img></img></ul>
+                </li>	
+            </div>
+        </div>
+    </div>
+    <div id="footer">
+    	<ul>
+        	<li id="page-status">Please enter the URLs of your social network pages</li>
+        </ul>
+    </div>
+</body>
+</html>

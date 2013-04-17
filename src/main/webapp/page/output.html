@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta content="width=device-width, initial-scale=1.0" name="viewport" />
+<title>Schwartz Mobile</title>
+<link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/3.3.0/build/cssreset/reset-min.css">
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script src="../js/jquery.grid-a-licious.js"></script>
+<style>
+	.message {
+		font-size:15px;
+		font-weight:bold;
+	}
+	.userName {
+		
+	}
+	.content {
+		color:gray;
+	}
+	
+	.item p {
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	#do {
+		color:green;
+		font-size:20px;
+	}
+</style>
+<script>
+    
+    function initData() {
+        var href = window.location.href;
+        var index = href.lastIndexOf("/");
+        href = href.substring(index+1);
+       // alert(href);
+        try {
+             $.ajax({
+                     url:'../data/'+href +".json",
+                     type:'get',
+                     dataType:'json',
+                     async:false,
+                     success:function(jsonData){
+                         //alert(data);
+                         if (jsonData.facebook) {
+                                $(jsonData.facebook).each(function(index,item){
+                                        var html="<div class='item'><div>";
+                                        html+="<img src='"+item.picture+"'/>";
+                                         html+="<p>"+item.message+"</p>";
+                                        html+="</div></div>";
+
+                                        $(html)
+                                                .appendTo("#content");
+                                });
+                        } 
+
+                        if (jsonData.youtube) {
+                                $(jsonData.youtube).each(function(index,item){
+                                        var html="<div class='item'><div>";
+                                        //html+="<img src='"+item.thumbnail.sqDefault+"'/>";
+                                        html+="<iframe class='youtube-player' type='text/html' width='300' height='190' src='"+item.player.mobile+"' frameborder='0'></iframe>"
+                                        html+=item.title;
+                                        html+="</div></div>";
+
+                                        $(html)
+                                                .appendTo("#content");
+                                });
+                        }
+                     },
+                     error:function(e){	
+                        alert("Error when get json result"+href+":" + e.responseText);
+                     }
+             });
+        } catch (e) {
+                alert("Error when get json result"+href+":" + e.responseText);
+        }
+    }
+	$(document).ready(function(){
+		//showJSONData();
+                initData();
+                $("#content").gridalicious({
+                        gutter: 5,
+			width: 150
+        });
+	});
+</script>
+
+</head>
+<body>
+	<div id="wrapper">
+    	<div id="header"></div><!--header-->
+		<div id="content">
+		
+		</div>
+        </div>
+        
+</body>
+</html>
